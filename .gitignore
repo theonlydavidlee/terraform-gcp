@@ -1,0 +1,8 @@
+.terraform*
+terraform.*
+**/tfplan
+**/tfplan.out
+.idea/
+*.iml
+*.ipr
+*.iws
