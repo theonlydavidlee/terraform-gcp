@@ -6,6 +6,23 @@ locals {
   ]
 }
 
+resource "google_compute_subnetwork" "this" {
+  name = "${var.cluster_name}-subnet"
+
+  ip_cidr_range = var.ip_range_nodes
+  region = local.region
+  network = var.network
+  private_ip_google_access = true
+  secondary_ip_range {
+    range_name = "pod-cidr"
+    ip_cidr_range = var.ip_range_pods
+  }
+  secondary_ip_range {
+    range_name = "services-cidr"
+    ip_cidr_range = var.ip_range_services
+  }
+}
+
 module "gke_private_cluster" {
   source = "../../../modules/cluster/private"
 
@@ -32,19 +49,24 @@ module "gke_private_cluster" {
   http_load_balancing = false
 }
 
-resource "google_compute_subnetwork" "this" {
-  name = "${var.cluster_name}-subnet"
+module "kube_services_pool_1" {
+  source = "../../../modules/nodepool"
 
-  ip_cidr_range = var.ip_range_nodes
-  region = local.region
-  network = var.network
-  private_ip_google_access = true
-  secondary_ip_range {
-    range_name = "pod-cidr"
-    ip_cidr_range = var.ip_range_pods
+  nodepool_name = "pool-1"
+  nodepool_gke_version = var.nodepool_gke_version
+
+  cluster_name = module.gke_private_cluster.name
+  location = local.region
+
+  initial_node_count = 1
+
+  autoscaling = {
+    enabled = true
+    min_node_count = 1
+    max_node_count = 6
   }
-  secondary_ip_range {
-    range_name = "services-cidr"
-    ip_cidr_range = var.ip_range_services
+
+  node_config = {
+    machine_type = "n1-standard-1"
   }
 }
