@@ -7,8 +7,8 @@ module "us_central1_1" {
 
   project_id = var.project_id
 
-  master_gke_version = "1.15.11-gke.12"
-  nodepool_gke_version = "1.15.11-gke.12"
+  master_gke_version = "1.16.13-gke.401"
+  nodepool_gke_version = "1.16.13-gke.401"
 
   cluster_name = "us-central1-1"
   network = data.google_compute_network.this.name
